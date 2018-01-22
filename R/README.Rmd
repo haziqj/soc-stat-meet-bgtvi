@@ -7,137 +7,35 @@ knitr::opts_chunk$set(echo = TRUE, prompt = TRUE)
 options(prompt = "R> ")
 
 # Load external .R file
-knitr::read_chunk("01-prelim.R")
-knitr::read_chunk("05-iris.R")
-knitr::read_chunk("07-cardiac.R")
-knitr::read_chunk("08-smoking.R")
+# knitr::read_chunk("01-prelim.R")
+# knitr::read_chunk("05-iris.R")
+# knitr::read_chunk("07-cardiac.R")
+# knitr::read_chunk("08-smoking.R")
 ```
-```{r prelim, include = FALSE}
-```
+
+<!-- ```{r prelim, include = FALSE} -->
+<!-- ``` -->
 
 ## Abstract
 
-An extension of the I-prior methodology to binary response data is explored. Starting from a latent variable approach, it is assumed that there exists continuous, auxiliary random variables which decide the outcome of the binary responses. Fitting a classical linear regression model on these latent variables while assuming normality of the error terms leads to the well-known generalised linear model with a probit link. A more general regression approach is considered instead, in which an I-prior on the regression function, which lies in some reproducing kernel Hilbert space, is assumed. An I-prior distribution is Gaussian with mean chosen a priori, and covariance equal to the Fisher information for the regression function. By working with I-priors, the benefits of the methodology are brought over to the binary case - one of which is that it provides a unified model-fitting framework that includes additive models, multilevel models and models with one or more functional covariates. The challenge is in the estimation, and a variational approximation is employed to overcome the intractable likelihood. Several real-world examples are presented from analyses conducted in `R`.
+TBC.
 
-*Keywords*: binary, probit, regression, kernel, RKHS, Gaussian, process, multilevel, longitudinal, functional, prior, variational, Bayes, EM
+*Keywords*: to, be, confirmed
 
 ## Links
 
-- Presentation slides - [PDF](http://phd3.haziqj.ml/phd-presentation-3-handout.pdf)
-- Source code - [GitHub](https://github.com/haziqjamil/phd-presentation-3)
-- R/iprior package - [CRAN](https://cran.r-project.org/package=iprior), [GitHub](https://github.com/haziqjamil/iprior)
-- R/iprobit package - [GitHub](https://github.com/haziqjamil/iprobit)
-
-## Main results
-
-- [Variational I-prior probit models in R](#fishers-iris-data-set)
-- [Predicting cardiac arrhythmia](#cardiac-arrhythmia-data-set)
-- [Meta-analysis of smoking cessation](#meta-analysis-of-smoking-cessation)
-- [Other supplementary material](#supplementary-material)
-
-### Fisher's Iris data set
-
-Varitional inference for I-prior probit models are implemented in the `R` package `iprobit`. A simple demonstratation is shown using the classical Fisher's Iris data set, where the goal is to distinguish between the two classes (Setosa vs. Others).
-
-```{r data.iris, echo = FALSE, fig.width = 7, fig.height = 4.5}
-```
-
-#### Model fitting
-
-```{r mod.iris, include = FALSE, cache = TRUE}
-```
-```{r fake.mod.iris, echo = 1:3, eval = FALSE}
-```
-```{r fake.mod.iris, echo = FALSE, eval = 2}
-```
-
-#### Model summary
-
-```{r iris.summary}
-summary(mod)
-```
-
-#### Monitoring the lower bound
-
-```{r iris-lb-command, eval = FALSE}
-iplot_lb(mod, niter.plot = 10)
-```
-```{r iris-lb, echo = FALSE, fig.width = 7, fig.height = 4}
-iplot_lb(mod, niter.plot = 10, lab.pos = "down")
-```
-
-#### Decision boundary
-
-```{r iris-decbound, fig.width = 7, fig.height = 4}
-iplot_decbound(mod)
-```
-
-### Cardiac arrhythmia data set 
-
-Distinguishing between the presence and absence of cardiac arrhythmia based on 194 predictors which includes various ECG data and other attributes such as age and weight. The out-of-sample prediction error is compared against various popular classififiers. The training sets were subsampled from the full data set, and the remaining data served as the validation set.
-
-#### Results of experiments
-
-The table shows the average misclassification rates (out of 100) and standard errors from 100 repetitions of the experiments. Ranking was done based on a simple weighted average across subsamples, with more weight given to small misclassification rates and small sub-samples.
-
-```{r sim.res.cardiac, echo = FALSE}
-```
-
-#### Plot of results
-
-```{r plot.readme.cardiac, echo = FALSE, fig.height = 4, fig.width = 5.5}
-```
-
-### Meta-analysis of smoking cessation 
-
-Estimating the treatment effect of nicotine gum to aid smoking cessation from a meta-analysis of 27 independent scientific studies.
-
-#### Model comparison
-
-Model 1 only considers treatment effect and ignores study-groups. Model 2 considers both treatment and study-group effects. Model 3 is similar to Model 2 with an addition of an interaction effect between treatment and study groups. Model 3 is the model chosen, as it implies the effectiveness of the treatments on quitting smoking varies across study groups.
-
-```{r data.smoke, include = FALSE}
-```
-
-```{r fit.smoke, include = FALSE}
-```
-
-```{r mod.compare.smoke, include = FALSE}
-```
-
-```{r mod.compare.smoke.md, echo = FALSE}
-colnames(tab.compare)[4] <- "No. of RKHS param."
-knitr::kable(tab.compare, align = c("l", "r", "r", "r"), row.names = TRUE)
-```
-
-*Notes: The [Brier score](https://en.wikipedia.org/wiki/Brier_score) measures the accuracy of probabilistic predictions.*
-
-#### Model predicted odds 
-
-Unlike logistic models, the fitted probabilities and hence the odds needed to be calculated manually. These, together with the naive 95% credibility interval, are tabulated below for each of the 27 studies.
-
-```{r tab.smoke.all, echo = FALSE}
-```
-
-#### Plot of model predicted odds
-
-```{r plot.smoke.all, echo = FALSE, fig.height = 10, fig.width = 6}
-```
+<!-- - Presentation slides - [PDF](http://phd3.haziqj.ml/phd-presentation-3-handout.pdf) -->
+<!-- - Source code - [GitHub](https://github.com/haziqjamil/phd-presentation-3) -->
+<!-- - R/iprior package - [CRAN](https://cran.r-project.org/package=iprior), [GitHub](https://github.com/haziqjamil/iprior) -->
+<!-- - R/iprobit package - [GitHub](https://github.com/haziqjamil/iprobit) -->
 
 ## Supplementary material
 
-### Variational inference for Gaussian mean and precision
-
-Adapted from pp.31-32 of the presentation.
-
-<img src="figure/var-ex.png" width="650">
-<!-- ![variational-example1](figure/var-ex.png) -->
-
-![variational-example2](figure/animation.gif)
+## References
 
 ***
 
-Copyright (C) 2017 [Haziq Jamil](http://haziqj.ml). All rights reserved.
+Copyright (C) 2018 [Haziq Jamil](http://haziqj.ml). 
 
 ```{r move, include = FALSE}
 file.copy("README.md", "../README.md", overwrite = TRUE)
