@@ -1,0 +1,81 @@
+\documentclass[]{beamer}
+%\documentclass[xcolor={dvipsnames}, handout]{beamer}  % for printing
+\usepackage{lmodern}
+\usepackage{standalone}
+\usepackage{haziq_beamer}
+\usepackage{knitr}
+\graphicspath{{figure/}{R/figure/}}
+\addbibresource{bib/phd-presentation-3.bib}
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% TITLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title[Variational inference]{A beginner's guide to variational inference}
+\author[Haziq Jamil]{
+  \large{Haziq Jamil}\\ 
+  %\footnotesize{Supervisors: Dr. Wicher Bergsma \& Prof. Irini Moustaki}
+}
+\institute[http://haziqj.ml]{
+  Social Statistics\\ 
+  London School of Economics and Political Science
+}
+\date[1 Feb 2018]{
+  1 February 2018\\
+  \hspace{1cm}\\
+  Social Statistics Meeting\\
+  \hspace{1cm}\\
+  \href{http://socialstats.haziqj.ml}{\color{fu-red!60} \textbf{http://socialstats.haziqj.ml}}
+}
+
+\mytitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% TOC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\mytoc
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% BODY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Introduction}
+\input{01-introduction}
+
+%\section[Examples]{Examples}
+%\transition
+%\input{02-examples}
+
+\section{Discussion}
+\transition
+\input{properties.tex}
+
+
+%
+%\section{Discussion}
+%\transition
+%\input{05-summary}
+
+%\section*{End}
+%\thankyou
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% REFERENCES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\appendix
+\refslide
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% BACKUP SLIDES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\beginbackup
+%\section{Additional material}
+%\transitionsubsec
+%\input{06-additional-material}
+%\backupend
+
+\end{document}

@@ -1,0 +1,93 @@
+\documentclass{beamer}
+\usepackage{standalone}
+\standalonetrue
+\ifstandalone
+  \usepackage{../haziq_beamer}
+  \addbibresource{../bib/phd-presentation-3.bib}
+\fi
+
+<<setup, include = FALSE, cache = FALSE>>=
+knitr::opts_chunk$set(echo = TRUE, fig.align = "center", size = "small",
+                      prompt = TRUE)
+options(prompt = "R> ")
+
+# Load external .R file
+knitr::read_chunk("01-prelim.R")
+knitr::read_chunk("05-iris.R")
+knitr::read_chunk("07-cardiac.R")
+knitr::read_chunk("08-smoking.R")
+
+# BibLaTeX with Biber backend
+system(paste("biber", sub("\\.Rnw$", "", current_input())))
+@
+
+<<prelim, include = FALSE>>=
+@
+
+\begin{document}
+
+\ifstandalone
+  \section{Examples}
+\fi
+
+\subsection{Fisher's Iris data set}
+
+\begin{frame}[fragile]{Fisher's Iris data set}
+<<data.iris, echo = FALSE, fig.width = 7, fig.height = 4.5>>=
+@
+\end{frame}
+
+<<mod.iris, include = FALSE, cache = TRUE>>=
+@
+\begin{frame}[fragile]{Fisher's Iris data set - Model fitting}
+\blfootnote{\fullcite{Jamil2017iprobit}}
+\vspace{-13pt}
+\begin{itemize}
+\item Varitional inference for I-prior probit models implemented in \proglang{R} package \pkg{iprobit} (still lots of work to do!).
+\end{itemize}
+<<fake.mod.iris, echo = 1:3, eval = FALSE>>=
+@
+\vspace{-25pt}
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\vspace{0.8em}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+\vspace{-25pt}
+<<fake.mod.iris, echo = FALSE, eval = 2>>=
+@
+
+\end{frame}
+
+\begin{frame}[fragile]{Fisher's Iris data set - Model summary}
+<<>>=
+summary(mod)
+@
+\end{frame}
+
+\begin{frame}[fragile]{Fisher's Iris data set - Lower bound}
+\vspace{-7pt}
+<<iris-lb-command, eval = FALSE>>=
+iplot_lb(mod, niter.plot = 10)
+@
+<<iris-lb, echo = FALSE, fig.width = 7, fig.height = 3.9>>=
+iplot_lb(mod, niter.plot = 10, lab.pos = "down")
+@
+\end{frame}
+
+\begin{frame}[fragile]{Fisher's Iris data set - Decision boundary}
+\vspace{-5pt}
+<<iris-decbound, fig.width = 7, fig.height = 4>>=
+iplot_decbound(mod)
+@
+\end{frame}
+
+\end{document}
+
+<<move, include = FALSE>>=
+files <- list.files("figure/")
+file.copy(file.path("figure", files), file.path("../figure", files),
+          overwrite = TRUE)
+@
