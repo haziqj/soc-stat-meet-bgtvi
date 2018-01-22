@@ -1,0 +1,21 @@
+\subsection{Laplace's method}
+\begin{frame}[label=laplace]{Laplace's method}
+  \blfootnote{\fullcite[§4.1, pp.777-778.]{Kass1995}}
+  \vspace{-15pt}
+  \begin{itemize}[<+->]\setlength\itemsep{0.8em}
+    \item Interested in $p(\bff|\by) \propto p(\by|\bff)p(\bff) =: e^{Q(\bff)}$, with normalising constant $p(\by) = \int e^{Q(\bff)} \d\bff$. The Taylor expansion of $Q$ about its mode $\tilde\bff$
+    \[
+      Q(\bff) \approx Q(\tilde\bff) - \half (\bff - \tilde\bff)^\top\bA(\bff - \tilde\bff) 
+    \]
+    is recognised as the logarithm of an unnormalised Gaussian density, with $\bA = -\text{D}^2 Q(\bff)$ being the negative Hessian of $Q$ evaluated at  $\tilde\bff$.
+    \item The posterior $p(\bff|\by)$ is approximated by $\N(\tilde\bff, \bA^{-1})$, and the marginal by
+    \[
+      p(\by) \approx (2\pi)^{n/2} \vert \bA \vert^{-1/2}  p(\by|\tilde\bff)p(\tilde\bff)
+    \]
+    \item Won't scale with large $n$; difficult to find modes in high dimensions.
+  \end{itemize}
+  
+  \begin{textblock*}{3cm}(.982\textwidth,1.04\textheight)%
+    \hyperlink{estimation}{\beamerbutton{back}}      
+  \end{textblock*}
+\end{frame}
