@@ -1,8 +1,6 @@
-\subsection{Motivation}
-
 \begin{frame}{Introduction}
   \begin{itemize}
-      \item Consider a statistical model where we have observations $\by = (y_1, \dots, y_n)$ and also some latent variables $\bz = (z_1, \dots, z_m)$.
+    \item Consider a statistical model where we have observations $\by = (y_1, \dots, y_n)$ and also some latent variables $\bz = (z_1, \dots, z_m)$.
     \pause  
     \item Want to evaluate the intractable integral
     \[
@@ -15,41 +13,17 @@
 %      \item etc.
     \end{itemize}
 %    \item Possible ways: quadrature methods, Laplace approximation, MCMC
-    \item Variational inference approximates the ``posterior'' by a tractably close distribution in the KL sense.
+    \pause
+    \item Variational inference approximates the ``posterior'' $\cI$ by a tractably close distribution in the Kullback-Leibler sense.
+    \pause
     \item Advantages:
     \begin{itemize}
-      \item Computationally tractable
+      \item Computationally fast
       \item Convergence easily assessed
       \item Works well in practice\footnote{With some caveats which will be discussed.} 
     \end{itemize}
   \end{itemize}
 \end{frame}
-
-%\subsection{The variational principle}
-%
-%\begin{frame}{The variational principle}
-%  \vspace{-10pt}
-%  \begin{itemize}[<+->]
-%    \item Name derived from calculus of variations which deals with maximising or minimising functionals.
-%    \begin{table}
-%      \begin{tabular}{l  l  l }
-%      Functions   &$p:\theta \mapsto \bbR$  &(standard calculus) \\ 
-%      Functionals &$\cH:p \mapsto \bbR$     &(variational calculus) \\ 
-%      \end{tabular}
-%    \end{table}
-%  \item Using standard calculus, we can solve
-%  \[
-%    \argmax_\theta p(\theta) =: \hat\theta
-%  \]
-%  e.g. $p$ is a likelihood function, and $\hat\theta$ is the ML estimate.
-%  \item Using variational calculus, we can solve
-%  \[
-%    \argmax_p \cH(p) =: \tilde p
-%  \]
-%  e.g. $\cH$ is the entropy $\cH = - \int p(x)\log p(x) \d x$, and $\tilde p$ is the entropy maximising distribution.
-%  \end{itemize}
-%  \vspace{5pt}
-%\end{frame}
 
 \begin{frame}{In the literature}
   \vspace{-15pt}
@@ -60,6 +34,7 @@
   \vspace{-15pt}
   \begin{itemize}
     \item Well known in the machine learning community.
+    \pause
     \item In social statistics:
     \begin{itemize}\footnotesize
       \item \fullcite{erosheva2007describing}
@@ -79,54 +54,75 @@
   \end{itemize}
 \end{frame}
 
+\subsection{Idea}
+
 \begin{frame}{Idea}
   \blfootnote{\fullcite{bleiyoutube}}
-  \vspace{-45pt}
-  \begin{figure}[t]
-    \includegraphics[scale=0.2]{figure/variational_pictorial}
-  \end{figure}
-  \vspace{-9pt}
+  \vspace*{-35pt}
+  \begin{center}\begin{tikzpicture}
+    \draw[draw=none] (0,0) ellipse (4cm and 2.2cm);
+    \draw[draw=none] (-0.8,-0.5) to [curve through={(-2,0) .. (-2,-0.8) .. (1,-0.8) .. (-1,1.5) .. (0,1.5) ..(0.3,0.1) .. (0.5,1.5) .. (2,0) .. (2.1,-0.1) .. (2.2,1.1) .. (3,0.9)}] (3.317,1.225);  % required to keep everything in place
+    \only<1>{\node at (-2.8,0.7) {$q(\bz)$};}
+  
+    \only<1-2>{\fill (4.05,2.1) circle (0pt) node[right,yshift=1] {$p(\bz|\by)$};}
+    \only<2->{
+      \draw[ultra thick] (0,0) ellipse (4cm and 2.2cm);
+      \node at (-2.8,0.7) {$q(\bz;\nu)$};
+    }   
+     
+    \only<4->{\draw[thick,colred] (-0.8,-0.5) to [curve through={(-2,0) .. (-2,-0.8) .. (1,-0.8) .. (-1,1.5) .. (0,1.5) ..(0.3,0.1) .. (0.5,1.5) .. (2,0) .. (2.1,-0.1) .. (2.2,1.1) .. (3,0.9)}] (3.317,1.225);}  % curve using hobby tikz
+    \only<3->{\draw[dashed, very thick,black!50] (3.317,1.225) -- (4.05,2.1);}
+    \only<4->{\fill (-0.8,-0.5) circle (2.2pt) node[below] {$\nu^{\text{init}}$};}
+    \only<3->{\fill (3.317,1.225) circle (2.2pt) node[left,yshift=-1] {$\nu^*$};}
+    \only<3->{\fill (4.05,2.1) circle (2.2pt) node[right,yshift=1] {$p(\bz|\by)$};}
+    \only<3->{\node[gray] at (4.5,1.4) {$\KL(q\Vert p)$};}
+  \end{tikzpicture}\end{center}
+  \vspace{-20pt}
   \begin{itemize}
-    \item Minimise Kullbeck-Leibler divergence using calculus of variations
+    \item Minimise Kullback-Leibler divergence (using calculus of variations)
     \[
-      \KL(q \Vert p) = -\int \log \frac{p(\bz|\by)}{q(\bz)} q(\bz) \d\bz
+      \KL(q \Vert p) = -\int \log \frac{p(\bz|\by)}{q(\bz)} q(\bz) \d\bz.
     \]
 %    \item Minimisation of $\KL(q\Vert p)$ is a problem of calculus of variations.
-    \item \textbf{ISSUE}: $\KL(q\Vert p)$ is intractable.
+    \item<5-> \textbf{ISSUE}: $\KL(q\Vert p)$ is intractable.
   \end{itemize}
 \end{frame}
 
 \begin{frame}{The Evidence Lower Bound (ELBO)}  
-  \vspace{-3pt}
+%  \vspace{-3pt}
   \begin{itemize}\setlength\itemsep{0.5em}
     \item Let $q(\bz)$ be some density function to approximate $p(\bz|\by)$. \pause Then the log-marginal density can be decomposed as follows:
     \begin{align*}
       \log p(\by) &= \log p(\by,\bz) - \log p(\bz|\by) \\
       \onslide<3->{
       &= \int \left\{ \log \frac{p(\by,\bz)}{q(\bz)} - \log \frac{p(\bz|\by)}{q(\bz)} \right\} q(\bz) \d \bz \\    
+      }
+      \onslide<4->{
       &=  \cL(q) +  \KL(q \Vert p) \\
       &\geq \cL(q) 
       }   
     \end{align*}
-    \item<4-> $\cL$ is referred to as the ``lower-bound'', and it serves as a surrogate function to the marginal.
-    \item<4-> Maximising $\cL(q)$ is equivalent to minimising $\KL(q \Vert p)$.
-    \item<4-> \textbf{ISSUE}: $\cL(q)$ is (generally) not convex.
+    \item<5-> $\cL$ is referred to as the ``lower-bound'', and it serves as a surrogate function to the marginal.
+    \item<5-> Maximising $\cL(q)$ is equivalent to minimising $\KL(q \Vert p)$.
+    \item<6-> \textbf{ISSUE}: $\cL(q)$ is (generally) not convex.
   \end{itemize}
 \end{frame}
 
+\subsection{Comparison to EM}
+
 \begin{frame}{Comparison to the EM algorithm}
   \begin{itemize}
-    \item Suppose for this part, the marginal density $p(\by|\theta)$ depends on parameters $\theta$.
-    \item In the EM algorithm, the true posterior density is used, i.e. $q(\bz) \equiv p(\bz|\by,\theta)$.
-    \item Thus,
+    \item<1-> Suppose for this part, the marginal density $p(\by|\theta)$ depends on parameters $\theta$.
+    \item<2-> In the EM algorithm, the true posterior density is used, i.e. $q(\bz) \equiv p(\bz|\by,\theta)$.
+    \item<3-> Thus,
     \begin{align*}
-      \log p(\by|\theta) 
-      &= \int \left\{ \log \frac{p(\by,\bz|\theta)}{p(\bz|\by,\theta)} - \cancel{\log \frac{p(\bz|\by,\theta)}{p(\bz|\by,\theta)}} \right\} p(\bz|\by,\theta^{(t)}) \d \bz \\    
-      &= \E_{\theta^{(t)}}[\log p(\by,\bz|\theta)] - \E_{\theta^{(t)}}[\log p(\bz|\by,\theta)] \\   
-      &= Q(\theta|\theta^{(t)}) + \text{entropy}.
+      \onslide<3->{\log p(\by|\theta) 
+      &= \int \left\{ \log \frac{p(\by,\bz|\theta)}{p(\bz|\by,\theta)} - \cancel{\log \frac{p(\bz|\by,\theta)}{p(\bz|\by,\theta)}} \right\} p(\bz|\by,\theta^{(t)}) \d \bz \\  }  
+      \onslide<4->{&= \E_{\theta^{(t)}}[\log p(\by,\bz|\theta)] - \E_{\theta^{(t)}}[\log p(\bz|\by,\theta)] \\   }
+      \onslide<5->{&= Q(\theta|\theta^{(t)}) + \text{entropy}.}
     \end{align*}
-    \item Minimising the KL divergence corresponds to the E-step.
-    \item For any $\theta$,
+    \item<6-> Minimising the KL divergence corresponds to the E-step.
+    \item<7-> For any $\theta$,
     \begin{align*}
       \log p(\by|\theta) - \log p(\by|\theta^{(t)}) 
       &= Q(\theta|\theta^{(t)}) - Q(\theta^{(t)}|\theta^{(t)}) + \Delta \text{entropy} \\
@@ -134,55 +130,11 @@
     \end{align*}
   \end{itemize}
 \end{frame}
-%\input{02a-energy}
+\input{02a-energy}
 
-%\begin{frame}[label=varcompare]{Comparison of approximations (density)}
-%  \vspace{-5pt}
-%  \only<1|handout:0>{
-%    \begin{center}
-%      \includegraphics[scale=0.7]{figure/compare1}
-%    \end{center}
-%  }
-%%  \only<2|handout:0>{
-%%    \begin{center}
-%%      \includegraphics[scale=0.7]{figure/compare2}
-%%    \end{center}
-%%  }  
-%  \only<2|handout:0>{
-%    \begin{center}
-%      \includegraphics[scale=0.7]{figure/compare3}
-%    \end{center}
-%  } 
-%%  \only<4|handout:0>{
-%%    \begin{center}
-%%      \includegraphics[scale=0.7]{figure/compare4}
-%%    \end{center}
-%%  } 
-%  \only<3|handout:1>{
-%    \begin{center}
-%      \includegraphics[scale=0.7]{figure/compare5}
-%    \end{center}
-%  } 
-%  
-%  \begin{textblock*}{3cm}(.982\textwidth,1.04\textheight)%
-%    \hyperlink{summary}{\beamerbutton{back}}      
-%  \end{textblock*}
-%\end{frame}
-%
-%\begin{frame}{Comparison of approximations (deviance)}
-%  \vspace{-5pt}
-%  \begin{center}
-%    \includegraphics[scale=0.7]{figure/compare6}
-%  \end{center}
-%
-%  \begin{textblock*}{3cm}(.982\textwidth,1.04\textheight)%
-%    \hyperlink{summary}{\beamerbutton{back}}      
-%  \end{textblock*}  
-%\end{frame}
+\subsection{Mean-field distributions}
 
 \begin{frame}{Factorised distributions (Mean-field theory)}
-%  \blfootnote{\fullcite{Blei2016}}
-  \vspace{-20pt}
   \begin{itemize}
     \item<1-> Maximising $\cL$ over all possible $q$ not feasible. Need some restrictions, but only to achieve tractability.
     \item<1-> Suppose we partition elements of $\bz$ into $M$ disjoint groups $\bz = (\bz^{(1)}, \dots, \bz^{(M)})$, and assume
@@ -194,14 +146,17 @@
       \tilde q_j(\bz^{(j)}) \propto \exp\big(\E_{-j}[\log p(\by,\bz)]\big)
     \end{align}
     for $j \in \{1,\dots,m\}$.
-    \item<3-> In practice, these unnormalised densities are of recognisable form (especially if conjugate priors are used).
+    \item<3-> In practice, these unnormalised densities are of recognisable form (especially if conjugacy is considered).
     \vspace{4pt}
   \end{itemize}
 \end{frame}
 
+\subsection{Coordinate ascent algorithm}
+
+\algrenewcommand{\algorithmiccomment}[1]{{\color{gray}\hfill$\triangleright$ #1}}
 \begin{frame}[label=cavi]{Coordinate ascent mean-field variational inference (CAVI)}
-  \vspace{-5pt}
-  \begin{itemize}\setlength\itemsep{0.4em}
+  \vspace{-3pt}
+  \begin{itemize}[<+->]\setlength\itemsep{0.3em}
     \item The optimal distributions are coupled with another, i.e. each $\tilde q_j(\bz^{(j)})$ depends on the optimal moments of $\bz^{(k)}$, $k \in \{1,\dots,M:k \neq j\}$.
     \item One way around this to employ an iterative procedure.
     \item Assess convergence by monitoring the lower bound
@@ -209,27 +164,24 @@
       \cL(q) = \E_{ q}[\log p(\by, \bz)] - \E_{ q}[\log q(\bz)].
     \]
   \end{itemize}
-  \vspace{-12pt}
-    \begin{center}
-    \scalebox{0.9}{
-    \begin{minipage}{\linewidth}
-  \begin{algorithm}[H]
+  \vspace{-24pt}
+  \onslide<4->{\begin{center}\scalebox{0.9}{\begin{minipage}{\linewidth}
+    \begin{algorithm}[H]
     \caption{CAVI}\label{alg:cavi}
     \begin{algorithmic}[1]
       \State \textbf{initialise} Variational factors $q_j(\bz^{(j)})$
       \While{$\cL(q)$ not converged}
-        \For{$j = 1,\dots,M$}
-          \State $\log q_j(\bz^{(j)}) \gets \E_{-j}[\log p(\by,\bz)] + \const$
-        \EndFor
-        \State $\cL(q) \gets \E_{ q}[\log p(\by, \bz)] - \E_{ q}[\log q(\bz)]$
+      \For{$j = 1,\dots,M$}
+      \State $\log q_j(\bz^{(j)}) \gets \E_{-j}[\log p(\by,\bz)] + \const$
+      \Comment{from \eqref{eq:meanfieldsoln}}
+      \EndFor
+      \State $\cL(q) \gets \E_{ q}[\log p(\by, \bz)] - \E_{ q}[\log q(\bz)]$
       \EndWhile
       \State \textbf{return} $\tilde q(\bz) = \prod_{j=1}^M \tilde q_j(\bz^{(j)})$ 
     \end{algorithmic}
-  \end{algorithm}
-      \end{minipage}%
-    }
-  \end{center}
-%  
+    \end{algorithm}
+  \end{minipage}}\end{center}}
+
 %  \begin{textblock*}{3cm}(.89\textwidth,1\textheight)%
 %    \hyperlink{varex}{\beamerbutton{example}}      
 %  \end{textblock*}

@@ -18,6 +18,10 @@
   \end{itemize}
 \end{frame}
 
+\begin{frame}{Non-convexity of ELBO}
+  Means that it converges to a local optima rather than the global optima. Show multiple restarts yield different ELBO.
+\end{frame}
+
 \subsection{Zero-forcing vs Zero-avoiding}
 
 \begin{frame}{Zero-forcing vs Zero-avoiding}
@@ -49,6 +53,8 @@
 
 \end{frame}
 
+\subsection{Quality of approximation}
+
 \begin{frame}{Distortion of higher order moments}
   \vspace{-11pt}
   \begin{figure}[t]
@@ -68,18 +74,30 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Non-convexity of ELBO}
-  Means that it converges to a local optima rather than the global optima. Show multiple restarts yield different ELBO.
-\end{frame}
-
 \begin{frame}{Quality of approximation}
 %  \blfootnote{\fullcite{gunawardana2005convergence}}
   \begin{itemize}
     \item Variational inference converges to a different optimum than ML, except for certain models (\cite{gunawardana2005convergence}).
     \item But not much can be said about the quality of approximation.
     \item Statistical properties not well understood---what is its statistical profile relative to the exact posterior?
-    \item Speed though
+    \item Speed trumps accuracy?
   \end{itemize}
+  \vspace{10pt}
+  \centering
+  \hspace{-15pt}
+  \begin{tikzpicture}[xscale=1.4]
+  	\draw [<->,thick] (0,0) -- (6,0);
+  	\node[left,text width=2cm,align=right] at (0,0) {\color{gray}\small Fast and inaccurate};
+ 	\node[right,text width=2cm,align=left] at (6,0) {\color{gray}\small Slow and accurate};
+  	\draw[thick] (0.3,0) -- (0.3, -0.7);
+  	\node[align=center,text width=2cm,below] at (0.3,-0.7) {Variational inference};
+  	\draw[thick] (5.7,0) -- (5.7, -0.7);
+  	\node[align=left,text width=2cm,below] at (6,-0.7) {MCMC};  	
+  	\draw[thick] (1.3,0) -- (1.3, -1.8);
+  	\node[align=center,below] at (1.3,-1.8) {Laplace};  	  
+  	\draw[thick] (2.5,0) -- (2.5, -1);	
+  	\node[align=center,below] at (3.2,-1) {Expectation propagation};  	    
+  \end{tikzpicture}
 \end{frame}
 
 \begin{frame}{Advanced topics}
@@ -90,7 +108,7 @@
       \item Instead, find a bound for the marginalising integral $\cI$.
       \item Used for Bayesian logistic regression as follows:
       \[
-        \cI = \int \logit(x^\top\beta) p(\beta) \d\beta \geq \int f(x^\top\beta,\xi) p(\beta) \d\beta.
+        \cI = \int \expit(x^\top\beta) p(\beta) \d\beta \geq \int f(x^\top\beta,\xi) p(\beta) \d\beta.
       \]
     \end{itemize}
     \item Stochastic variational inference

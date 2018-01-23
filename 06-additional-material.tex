@@ -1,3 +1,29 @@
+\subsection{The variational principle}
+
+\begin{frame}{The variational principle}
+  \vspace{-10pt}
+  \begin{itemize}[<+->]
+    \item Name derived from calculus of variations which deals with maximising or minimising functionals.
+    \begin{table}
+      \begin{tabular}{l  l  l }
+      Functions   &$p:\theta \mapsto \bbR$  &(standard calculus) \\ 
+      Functionals &$\cH:p \mapsto \bbR$     &(variational calculus) \\ 
+      \end{tabular}
+    \end{table}
+  \item Using standard calculus, we can solve
+  \[
+    \argmax_\theta p(\theta) =: \hat\theta
+  \]
+  e.g. $p$ is a likelihood function, and $\hat\theta$ is the ML estimate.
+  \item Using variational calculus, we can solve
+  \[
+    \argmax_p \cH(p) =: \tilde p
+  \]
+  e.g. $\cH$ is the entropy $\cH = - \int p(x)\log p(x) \d x$, and $\tilde p$ is the entropy maximising distribution.
+  \end{itemize}
+  \vspace{5pt}
+\end{frame}
+
 \subsection{Laplace's method}
 \begin{frame}[label=laplace]{Laplace's method}
   \blfootnote{\fullcite[§4.1, pp.777-778.]{Kass1995}}
@@ -18,4 +44,48 @@
   \begin{textblock*}{3cm}(.982\textwidth,1.04\textheight)%
     \hyperlink{estimation}{\beamerbutton{back}}      
   \end{textblock*}
+\end{frame}
+
+\begin{frame}[label=varcompare]{Comparison of approximations (density)}
+  \vspace{-5pt}
+  \only<1|handout:0>{
+    \begin{center}
+      \includegraphics[scale=0.7]{figure/compare1}
+    \end{center}
+  }
+%  \only<2|handout:0>{
+%    \begin{center}
+%      \includegraphics[scale=0.7]{figure/compare2}
+%    \end{center}
+%  }  
+  \only<2|handout:0>{
+    \begin{center}
+      \includegraphics[scale=0.7]{figure/compare3}
+    \end{center}
+  } 
+%  \only<4|handout:0>{
+%    \begin{center}
+%      \includegraphics[scale=0.7]{figure/compare4}
+%    \end{center}
+%  } 
+  \only<3|handout:1>{
+    \begin{center}
+      \includegraphics[scale=0.7]{figure/compare5}
+    \end{center}
+  } 
+  
+  \begin{textblock*}{3cm}(.982\textwidth,1.04\textheight)%
+    \hyperlink{summary}{\beamerbutton{back}}      
+  \end{textblock*}
+\end{frame}
+
+\begin{frame}{Comparison of approximations (deviance)}
+  \vspace{-5pt}
+  \begin{center}
+    \includegraphics[scale=0.7]{figure/compare6}
+  \end{center}
+
+  \begin{textblock*}{3cm}(.982\textwidth,1.04\textheight)%
+    \hyperlink{summary}{\beamerbutton{back}}      
+  \end{textblock*}  
 \end{frame}

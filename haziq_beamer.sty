@@ -49,7 +49,8 @@
   \setbeamertemplate{navigation symbols}{}
   \setbeamertemplate{caption}[default]
   \setbeamertemplate{itemize items}[circle] 
-  \setbeamertemplate{itemize subitem}[triangle] 
+%  \setbeamertemplate{itemize subitem}[triangle] 
+  \setbeamertemplate{itemize subitem}{\scriptsize\raise1.25pt\hbox{\donotcoloroutermaths$\blacktriangleright$}}
   \setbeamertemplate{itemize subsubitem}[triangle] 
   \setbeamertemplate{section in toc}[circle]
   \setbeamertemplate{subsection in toc}[default]
@@ -302,21 +303,6 @@
 % Mathematics
 \usepackage{amsmath}
 \usepackage{amssymb}
-\usepackage{amsthm}
-  \begingroup
-  \makeatletter
-    \@for\theoremstyle:=definition,remark,plain\do{%
-      \expandafter\g@addto@macro\csname th@\theoremstyle\endcsname{%
-        \addtolength\thm@preskip\parskip
-      }%
-    }
-  \endgroup
-  \newtheorem{thm}{Theorem}
-%  \theoremstyle{definition}
-  \newtheorem{defn}{Definition}
-  \newtheorem{lem}{Lemma}%[section]
-  \newtheorem{corr}{Corollary}%[section]
-  \newtheorem{remark}{Remark}
 \usepackage{dsfont}  % for indicator variables \mathsds{1}
 \usepackage{bm}  % for better bold script
 \usepackage[makeroom]{cancel}
@@ -342,11 +328,12 @@
 	\newcommand{\subfloat}[2][need a sub-caption]{\subcaptionbox{#1}{#2}}  % knitr
 \usepackage{rotfloat}	
 \usepackage{tikz}
-\usetikzlibrary{fit,positioning,shapes.geometric}
+\usetikzlibrary{fit,positioning,shapes.geometric,decorations.pathreplacing}
 \usepackage{forest}
-
 \usetikzlibrary{shapes.callouts}
-
+\usetikzlibrary{patterns,hobby}
+\usepackage{pgfplots}    % these are for squiggly lines
+\pgfplotsset{compat=1.6}  % https://tex.stackexchange.com/questions/160237/draw-somewhat-random-function/160274
 
 % Tables
 \usepackage{longtable}
@@ -482,6 +469,7 @@
 \DeclareMathOperator{\Dir}{Dir}
 \DeclareMathOperator{\Wis}{Wis}
 \DeclareMathOperator{\logit}{logit}
+\DeclareMathOperator{\expit}{expit}
 \DeclareMathOperator{\Mult}{Mult}
 \DeclareMathOperator{\Pois}{Pois}
 \DeclareMathOperator{\Cauchy}{Cauchy}

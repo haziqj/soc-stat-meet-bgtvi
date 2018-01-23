@@ -8,27 +8,33 @@
 \end{frame}
 
 \begin{frame}{Gaussian mixture model}
+  \onslide<2->{
   \begin{tikzpicture}[scale=1.1, transform shape]
     \tikzstyle{main}=[circle, minimum size = 10mm, thick, draw =black!80, node distance = 16mm]
     \tikzstyle{connect}=[-latex, thick]
     \tikzstyle{box}=[rectangle, draw=black!100]
-      \node[main,draw=colred] (pi) {\color{colred} $\bpi$};
-      \node[main] (z) [right=of pi,xshift=-0.65cm] {$\bz_i$};  %fill=black!10, double, double distance=0.6mm
-      \node[main] (x) [right=of z,xshift=-0.5cm] {$\bx_i$};
-      \node[main,draw=colblu] (mu) [above=of z,yshift=-0.7cm] {\color{colblu} $\bmu_k$};  
-      \node[main,draw=colgre] (Psi) [above=of x,yshift=-0.7cm] {\color{colgre} $\bPsi_k$};  
-      \path (pi) edge [connect] (z)
-            (z) edge [connect] (x)
-    		(Psi) edge [connect] (mu) 
-    		(mu) edge [connect] (x)
-    		(Psi) edge [connect] (x);
-      \node[rectangle, draw=black!100, fit= {(mu) ($(Psi.north east) + (0,0.5cm)$)}] {}; 
-      \node[rectangle, draw=none, fit= (mu) (Psi), label=above right:{$k=1,\dots,K$},yshift=-2mm,xshift=-12.75mm] {}; 
-      \node[rectangle, draw=black!100, fit={(z) ($(x.south east) + (0,-0.5cm)$)}] {}; 
-      \node[rectangle, draw=none, fit={(z) (x)}, label=below right:{$i=1,\dots,n$},yshift=1.5mm,xshift=-11mm] {}; 
-    \end{tikzpicture}
-    
-    \begin{textblock*}{0.47\textwidth}(0.55\textwidth,1.35cm)
+    \node[main] (pi) {$\bpi$};
+    \only<3->{\node[main,draw=colred] (pi) {\color{colred} $\bpi$};}
+    \node[main] (z) [right=of pi,xshift=-0.65cm] {$\bz_i$};  %fill=black!10, double, double distance=0.6mm
+    \node[main] (x) [right=of z,xshift=-0.5cm] {$\bx_i$};
+    \node[main] (mu) [above=of z,yshift=-0.7cm] {$\bmu_k$};  
+    \only<3->{\node[main,draw=colblu] (mu) [above=of z,yshift=-0.7cm] {\color{colblu} $\bmu_k$};}
+    \node[main] (Psi) [above=of x,yshift=-0.7cm] {$\bPsi_k$};  
+    \only<3->{\node[main,draw=colgre] (Psi) [above=of x,yshift=-0.7cm] {\color{colgre} $\bPsi_k$};}
+    \path (pi) edge [connect] (z)
+          (z) edge [connect] (x)
+  		  (Psi) edge [connect] (mu) 
+   		  (mu) edge [connect] (x)
+   		  (Psi) edge [connect] (x);
+    \node[rectangle, draw=black!100, fit= {(mu) ($(Psi.north east) + (0,0.5cm)$)}] {}; 
+    \node[rectangle, draw=none, fit= (mu) (Psi), label=above right:{$k=1,\dots,K$},yshift=-2mm,xshift=-12.75mm] {}; 
+    \node[rectangle, draw=black!100, fit={(z) ($(x.south east) + (0,-0.5cm)$)}] {}; 
+    \node[rectangle, draw=none, fit={(z) (x)}, label=below right:{$i=1,\dots,n$},yshift=1.5mm,xshift=-11mm] {}; 
+  \end{tikzpicture}
+  }
+  
+  \onslide<3->{  
+  \begin{textblock*}{0.47\textwidth}(0.55\textwidth,1.35cm)
     \begin{block}{}
     \vspace{-1.6em}
       \begin{align*}
@@ -38,17 +44,18 @@
         &= p(\bx|\bz,\bmu,\bPsi)p(\bz|\bpi) \\
         &\phantom{ = } \ \times {\color{colred} \Dir_K(\bpi|\alpha_{01},\dots,\alpha_{0K})} \\
         &\phantom{ = } \ \times {\color{colblu} {\textstyle\prod}_{k=1}^K \N_d(\bmu_k| \bmm_0, \big(\kappa_0\bPsi_k)^{-1}\big)} \\
-        &\phantom{ = } \ \times {\color{colgre} {\textstyle\prod}_{k=1}^K \Wis(\bPsi_k| \bW_0,\nu_0\big)}      
+        &\phantom{ = } \ \times {\color{colgre} {\textstyle\prod}_{k=1}^K \Wis_d(\bPsi_k| \bW_0,\nu_0\big)}      
       \end{align*}
     \end{block}
   \end{textblock*}
+  }
 
   \vspace{2mm}
   \begin{itemize}
     \item Introduce $\bz_i = (z_{i1},\dots,z_{iK})$, a $1$-of-$K$ binary vector, where each $z_{ik} \sim \Bern(\pi_k)$.
     \item Assuming $\bz = \{\bz_1,\dots,\bz_n \}$ are observed along with $\bx = \{\bx_1,\dots,\bx_n \}$,
     \[
-      p(\bx|\bz,\bmu,\bPsi) = \prod_{i=1}^n \prod_{k=1}^K \N(\bx_i|\bmu_k,\bPsi_k^{-1})^{z_{ik}}.
+      p(\bx|\bz,\bmu,\bPsi) = \prod_{i=1}^n \prod_{k=1}^K \N_d(\bx_i|\bmu_k,\bPsi_k^{-1})^{z_{ik}}.
     \]
   \end{itemize}
 \end{frame}
@@ -73,7 +80,7 @@
         \State $q(z_{ik}) \gets \Bern(\cdot)$
         \State $q(\bpi) \gets \Dir_K(\cdot)$
         \State $q(\bmu|\bPsi) \gets \N_d(\cdot,\cdot)$
-        \State $q(\bPsi) \gets \Wis(\cdot,\cdot)$
+        \State $q(\bPsi) \gets \Wis_d(\cdot,\cdot)$
         \State $\cL(q) \gets \E_{ q}[\log p(\bx,\bz,\bpi,\bmu,\bPsi)] - \E_{ q}[\log q(\bz,\bpi,\bmu,\bPsi)]$
       \EndWhile
       \State \textbf{return} $\tilde q(\bz,\bpi,\bmu,\bPsi) = \tilde q(\bz) \tilde q(\bpi) \tilde q(\bmu|\bPsi) \tilde q(\bPsi)$ 

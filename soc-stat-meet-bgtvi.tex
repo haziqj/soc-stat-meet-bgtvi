@@ -1,11 +1,9 @@
 \documentclass[]{beamer}
 %\documentclass[xcolor={dvipsnames}, handout]{beamer}  % for printing
-\usepackage{lmodern}
-\usepackage{standalone}
 \usepackage{haziq_beamer}
 \usepackage{knitr}
 \graphicspath{{figure/}{R/figure/}}
-\addbibresource{bib/phd-presentation-3.bib}
+\addbibresource{refs.bib}
 \begin{document}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -44,38 +42,32 @@
 \section{Introduction}
 \input{01-introduction}
 
-%\section[Examples]{Examples}
-%\transition
-%\input{02-examples}
+\section[Examples]{Examples}
+\transition
+\input{02-examples}
 
 \section{Discussion}
 \transition
-\input{properties.tex}
+\input{03-properties.tex}
 
-
-%
-%\section{Discussion}
-%\transition
-%\input{05-summary}
-
-%\section*{End}
+\section*{End}
 %\thankyou
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% REFERENCES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%\appendix
+\appendix
 \refslide
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% BACKUP SLIDES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%\beginbackup
-%\section{Additional material}
-%\transitionsubsec
-%\input{06-additional-material}
-%\backupend
+\beginbackup
+\section{Additional material}
+\transitionsubsec
+\input{06-additional-material}
+\backupend
 
 \end{document}
