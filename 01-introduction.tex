@@ -15,12 +15,11 @@
 %    \item Possible ways: quadrature methods, Laplace approximation, MCMC
     \pause
     \item Variational inference approximates the ``posterior'' $\cI$ by a tractably close distribution in the Kullback-Leibler sense.
-    \pause
-    \item Advantages:
+    \item<4-> Advantages:
     \begin{itemize}
       \item Computationally fast
       \item Convergence easily assessed
-      \item Works well in practice\footnote{With some caveats which will be discussed.} 
+      \item Works well in practice
     \end{itemize}
   \end{itemize}
 \end{frame}
@@ -62,7 +61,7 @@
   \begin{center}\begin{tikzpicture}
     \draw[draw=none] (0,0) ellipse (4cm and 2.2cm);
     \draw[draw=none] (-0.8,-0.5) to [curve through={(-2,0) .. (-2,-0.8) .. (1,-0.8) .. (-1,1.5) .. (0,1.5) ..(0.3,0.1) .. (0.5,1.5) .. (2,0) .. (2.1,-0.1) .. (2.2,1.1) .. (3,0.9)}] (3.317,1.225);  % required to keep everything in place
-    \only<1>{\node at (-2.8,0.7) {$q(\bz)$};}
+    \only<1|handout:0>{\node at (-2.8,0.7) {$q(\bz)$};}
   
     \only<1-2>{\fill (4.05,2.1) circle (0pt) node[right,yshift=1] {$p(\bz|\by)$};}
     \only<2->{

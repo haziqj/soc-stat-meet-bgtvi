@@ -1,271 +1,319 @@
-source("01-prelim.R")
+# Adapted from https://rpubs.com/cakapourani/variational-bayes-gmm
 
-## ---- points ----
-set.seed(123)
-N <- 150
-f <- function(x, truth = FALSE) {
-  35 * dnorm(x, mean = 1, sd = 0.8) +
-    65 * dnorm(x, mean = 4, sd = 1.5) +
-    (x > 4.5) * (exp((1.25 * (x - 4.5))) - 1) +
-    3 * dnorm(x, mean = 2.5, sd = 0.3)
+suppressPackageStartupMessages(require(matrixcalc))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(data.table))
+suppressPackageStartupMessages(library(purrr))
+suppressPackageStartupMessages(library(mvtnorm))
+suppressPackageStartupMessages(library(Matrix))
+
+# Define ggplot2 theme
+gg_theme <- function(){
+  p <- theme(
+    plot.title = element_text(size = 20,face = 'bold',
+                              margin = margin(0,0,3,0), hjust = 0.5),
+    axis.text = element_text(size = rel(1.05), color = 'black'),
+    axis.title = element_text(size = rel(1.45), color = 'black'),
+    axis.title.y = element_text(margin = margin(0,10,0,0)),
+    axis.title.x = element_text(margin = margin(10,0,0,0)),
+    axis.ticks.x = element_line(colour = "black", size = rel(0.8)),
+    axis.ticks.y = element_blank(),
+    legend.position = "right",
+    legend.key.size = unit(1.4, 'lines'),
+    legend.title = element_text(size = 12, face = 'bold'),
+    legend.text = element_text(size = 12),
+    panel.border = element_blank(),
+    panel.grid.major = element_line(colour = "gainsboro"),
+    panel.background = element_blank()
+  )
+  return(p)
 }
-x <- c(seq(0.2, 1.9, length = N * 5 / 8), seq(3.7, 4.6, length = N * 3 / 8))
-x <- sample(x, size = N)
-x <- x + rnorm(N, sd = 0.65)  # adding random fluctuation to the x
-x <- sort(x)
-y.err <- rt(N, df = 1)
-y <- f(x) + sign(y.err) * pmin(abs(y.err), rnorm(N, mean = 4.1))  # adding random terms to the y
 
-# True values
-x.true <- seq(-2.1, 7, length = 1000)
-y.true <- f(x.true, TRUE)
+# Mixture density using approximate predictive gaussian distribution
+mixture_pdf_gaussian <- function(model, data){
+  mixture <- vector(mode = "numeric", length = NROW(data))
+  for (k in 1:length(model$nu)) {
+    tau_k <- model$W[,,k] * model$nu[k] # TODO: Is this right?
+    mu_k  <- model$m[, k]
+    mixture <- mixture + model$pi_k[k] *
+      dmvnorm(cbind(data$x,data$y), mean = mu_k, sigma = solve(tau_k))
+  }
+  return(mixture)
+}
+# Mixture density using predictive t-distribution
+mixture_pdf_t <- function(model, data){
+  mixture <- vector(mode = "numeric", length = NROW(data))
+  for (k in 1:length(model$nu)) {
+    L_k <- solve((((model$nu[k] + 1 - NROW(model$m)) * model$beta[k]) /
+                    (1 + model$beta[k])) * model$W[,,k])
+    mixture <- mixture + (model$alpha[k]/sum(model$alpha)) *
+      dmvt(x = cbind(data$x,data$y), delta = model$m[, k],
+           sigma = L_k, df = model$nu[k] + 1 - NROW(model$m),
+           log = FALSE, type = "shifted")
+  }
+  return(mixture)
+}
+# Use the log sum exp trick for having numeric stability
+log_sum_exp <- function(x) {
+  # Computes log(sum(exp(x))
+  offset <- max(x)
+  s <- log(sum(exp(x - offset))) + offset
+  i <- which(!is.finite(s))
+  if (length(i) > 0) { s[i] <- offset }
+  return(s)
+}
 
-# Data for plot
-dat <- data.frame(x, y)
-dat.truth <- data.frame(x.true, y.true)
+# Fit VBLR model
+vb_gmm <- function(X, K = 3, alpha_0 = 1/K, m_0 = c(colMeans(X)),
+                   beta_0 = 1, nu_0 = NCOL(X) + 50,
+                   W_0 = diag(100, NCOL(X)), max_iter = 500,
+                   epsilon_conv = 1e-4, is_animation = FALSE,
+                   is_verbose = FALSE){
 
-p1 <- ggplot() +
-  geom_point(data = dat, aes(x = x, y = y)) +
-  scale_x_continuous(
-    limits = c(min(x.true), max(x.true)),
-    breaks = NULL, name = expression(italic(x))
-  ) +
-  scale_y_continuous(
-    limits = c(min(y) - 5, max(y) + 5),
-    breaks = NULL, name = expression(italic(y))
-  ) +
+  res.mu <- res.Lambda <- list()
+
+  # Compute logB function
+  logB <- function(W, nu){
+    D <- NCOL(W)
+    return(-0.5*nu*log(det(W)) - (0.5*nu*D*log(2) + 0.25*D*(D - 1) *
+                                    log(pi) + sum(lgamma(0.5 * (nu + 1 - 1:NCOL(W)))) ))  #log of B.79
+  }
+  X <- as.matrix(X)
+  D <- NCOL(X)              # Number of features
+  N <- NROW(X)              # Number of observations
+  W_0_inv <- solve(W_0)     # Compute W^{-1}
+  L <- rep(-Inf, max_iter)  # Store the lower bounds
+  r_nk = log_r_nk = log_rho_nk <- matrix(0, nrow = N, ncol = K)
+  x_bar_k <- matrix(0, nrow = D, ncol = K)
+  S_k = W_k <- array(0, c(D, D, K ) )
+  log_pi = log_Lambda <- rep(0, K)
+
+  if (is_animation) {
+    # Variables needed for plotting
+    dt <- data.table(expand.grid(x = seq(from = min(X[,1]) - 2,
+                                         to = max(X[,1]) + 2, length.out = 80),
+                                 y = seq(from = min(X[,2]) - 8,
+                                         to = max(X[,2]) + 2, length.out = 80)))
+  }
+  dt_all <- data.table(x = numeric(), y = numeric(), z = numeric(),
+                       iter = numeric())
+
+  m_k     <- t(kmeans(X, K, nstart = 25)$centers)  # Mean of Gaussian
+  # m_k <- rbind(
+  #   sample(X[, 1], size = K, replace = FALSE),
+  #   sample(X[, 2], size = K, replace = FALSE)
+  # )
+  beta_k  <- rep(beta_0, K)                # Scale of precision matrix
+  nu_k    <- rep(nu_0, K)                  # Degrees of freedom
+  alpha   <- rep(alpha_0, K)               # Dirichlet parameter
+  log_pi  <- digamma(alpha) - digamma(sum(alpha))
+  for (k in 1:K) {
+    W_k[,,k] <-  W_0  # Scale matrix for Wishart
+    log_Lambda[k] <- sum(digamma((nu_k[k] + 1 - c(1:D))/2)) +
+      D*log(2) + log(det(W_k[,,k]))
+  }
+
+  res.mu[[1]] <- m_k
+  Lambda.tmp <- W_k
+  for (k in seq_len(K)) {
+    v1 <- runif(1, min = 0.005, max = 0.2)
+    v2 <- runif(1, min = 185 / 10, max = 185 / 10)
+    Lambda.tmp[, , k] <- diag(1 / c(v1, v2))
+  }
+  res.Lambda[[1]] <- Lambda.tmp
+
+  if (is_animation) { # Create animation for initial assignments
+    my_z = mixture_pdf_t(model = list(m = m_k, W = W_k, beta = beta_k,
+                                      nu = nu_k, alpha = rep(1/K, K)), data = dt)
+    dt_all <- rbind(dt_all, dt[, z := my_z] %>% .[, iter := 0])
+  }
+
+  # Iterate to find optimal parameters
+  for (i in 2:max_iter) {
+    ##-------------------------------
+    # Variational E-Step
+    ##-------------------------------
+    for (k in 1:K) {
+      diff <- sweep(X, MARGIN = 2, STATS = m_k[, k], FUN = "-")
+      log_rho_nk[, k] <- log_pi[k] + 0.5*log_Lambda[k] -
+        0.5*(D/beta_k[k]) - 0.5*nu_k[k] * diag(diff %*%
+                                                 W_k[,,k] %*% t(diff)) # log of 10.67
+    }
+    # Responsibilities using the logSumExp for numerical stability
+    Z        <- apply(log_rho_nk, 1, log_sum_exp)
+    log_r_nk <- log_rho_nk - Z              # log of 10.49
+    r_nk     <- apply(log_r_nk, 2, exp)     # 10.49
+
+    ##-------------------------------
+    # Variational M-Step
+    ##-------------------------------
+    N_k <- colSums(r_nk) + 1e-10  # 10.51
+    for (k in 1:K) {
+      x_bar_k[, k] <- (r_nk[ ,k] %*% X) / N_k[k]   # 10.52
+      x_cen        <- sweep(X,MARGIN = 2,STATS = x_bar_k[, k],FUN = "-")
+      S_k[, , k]   <- t(x_cen) %*% (x_cen * r_nk[, k]) / N_k[k]  # 10.53
+    }
+    # Update Dirichlet parameter
+    alpha <- alpha_0 + N_k  # 10.58
+    # # Compute expected value of mixing proportions
+    # pi_k <- (alpha + N_k) / (K * alpha_0 + N)
+    pi_k <- alpha / sum(alpha)
+    # Update parameters for Gaussia-nWishart distribution
+    beta_k <- beta_0 + N_k    # 10.60
+    nu_k   <- nu_0 + N_k   # 10.63
+    for (k in 1:K) {
+      # 10.61
+      m_k[, k]   <- (1/beta_k[k]) * (beta_0*m_0 + N_k[k]*x_bar_k[, k])
+      # 10.62
+      W_k_inv <- W_0_inv + N_k[k] * S_k[,,k] +
+        ((beta_0*N_k[k])/(beta_0 + N_k[k])) * tcrossprod((x_bar_k[, k] - m_0))
+      W_k[, , k] <- solve(W_k_inv)
+    }
+    # Update expectations over \pi and \Lambda
+    # 10.66
+    log_pi <- digamma(alpha) - digamma(sum(alpha))
+    for (k in 1:K) { # 10.65
+      log_Lambda[k] <- sum(digamma((nu_k[k] + 1 - 1:D)/2)) +
+        D*log(2) + log(det(W_k[,,k]))
+    }
+
+    res.mu[[i]] <- m_k
+    res.Lambda[[i]] <- array(rep(nu_k, each = K), dim = c(D, D, K)) * W_k
+
+    ##-------------------------------
+    # Variational lower bound
+    ##-------------------------------
+    lb_px = lb_pml = lb_pml2 = lb_qml <- 0
+    for (k in 1:K) {
+      # 10.71
+      lb_px <- lb_px + N_k[k] * (log_Lambda[k] - D/beta_k[k] - nu_k[k] *
+                                   matrix.trace(S_k[,,k] %*% W_k[,,k]) - nu_k[k]*t(x_bar_k[,k] -
+                                                                                     m_k[,k]) %*% W_k[,,k] %*% (x_bar_k[,k] - m_k[,k]) - D*log(2*pi) )
+      # 10.74
+      lb_pml <- lb_pml + D*log(beta_0/(2*pi)) + log_Lambda[k] -
+        (D*beta_0)/beta_k[k] - beta_0*nu_k[k]*t(m_k[,k] - m_0) %*%
+        W_k[,,k] %*% (m_k[,k] - m_0)
+      # 10.74
+      lb_pml2 <- lb_pml2 + nu_k[k] * matrix.trace(W_0_inv %*% W_k[,,k])
+      # 10.77
+      lb_qml <- lb_qml + 0.5*log_Lambda[k] + 0.5*D*log(beta_k[k]/(2*pi)) -
+        0.5*D - logB(W = W_k[,,k], nu = nu_k[k]) -
+        0.5*(nu_k[k] - D - 1)*log_Lambda[k] + 0.5*nu_k[k]*D
+    }
+    lb_px  <- 0.5 * lb_px             # 10.71
+    lb_pml <- 0.5*lb_pml + K*logB(W = W_0,nu = nu_0) + 0.5*(nu_0 - D - 1) *
+      sum(log_Lambda) - 0.5*lb_pml2 # 10.74
+    lb_pz  <- sum(r_nk %*% log_pi)    # 10.72
+    lb_qz  <- sum(r_nk * log_r_nk)    # 10.75
+    lb_pp  <- sum((alpha_0 - 1)*log_pi) + lgamma(sum(K*alpha_0)) -
+      K*sum(lgamma(alpha_0))        # 10.73
+    lb_qp  <- sum((alpha - 1)*log_pi) + lgamma(sum(alpha)) -
+      sum(lgamma(alpha)) # 10.76
+    # Sum all parts to compute lower bound
+    L[i] <- lb_px + lb_pz + lb_pp + lb_pml - lb_qz - lb_qp - lb_qml
+
+    ##-------------------------------
+    # Evaluate mixture density for plotting
+    ##-------------------------------
+    if (is_animation) {
+      if ( (i - 1) %% 5 == 0 | i < 10) {
+        my_z = mixture_pdf_t(model = list(m = m_k, W = W_k, beta = beta_k,
+                                          nu = nu_k, alpha = alpha), data = dt)
+        dt_all <- rbind(dt_all, dt[, z := my_z] %>% .[, iter := i - 1])
+      }
+    }
+    # Show VB difference
+    if (is_verbose) { cat("It:\t",i,"\tLB:\t",L[i],
+                          "\tLB_diff:\t",L[i] - L[i - 1],"\n")}
+    # Check if lower bound decreases
+    if (L[i] < L[i - 1]) { message("Warning: Lower bound decreases!\n"); }
+    # Check for convergence
+    if (abs(L[i] - L[i - 1]) < epsilon_conv) { break }
+    # Check if VB converged in the given maximum iterations
+    if (i == max_iter) {warning("VB did not converge!\n")}
+  }
+  obj <- structure(list(X = X, K = K, N = N, D = D, pi_k = pi_k,
+                        alpha = alpha, r_nk = r_nk,  m = m_k, W = W_k,
+                        beta = beta_k, nu = nu_k, L = L[2:i],
+                        dt_all = dt_all, res.mu = res.mu, res.Lambda = res.Lambda),
+                   class = "vb_gmm")
+  cat("Iter = ", i, "\n")
+  return(obj)
+}
+
+set.seed(123)  # For reproducibility
+X <- as.matrix(faithful)
+K <- 6     # Number of clusters
+# Run vb-gmm model model
+res <- vb_gmm_model <- vb_gmm(X = X, K = K, alpha_0 = 1e-5, max_iter = 300,
+                       is_animation = TRUE)
+                       # W_0 = diag(c(10, 0.05)) / 100)
+# which(diff(diff(res$L)) > 0.01)  #1, 12, 149
+
+# Data plot
+ggplot(faithful, aes(eruptions, waiting)) +
+  geom_point() +
+  labs(x = "Eruption length (minutes)", y = "Time to next eruption (minutes)") +
+  theme_bw() -> p
+ggExtra::ggMarginal(p, type = "histogram", fill = "grey75", col = "grey75") -> p
+
+ggsave("../figure/faithful_scatter.pdf", p, width = 7, height = 7 * 4 / 7)
+
+# Plot of ELBO
+elbows <- c(3, 22, 28, 155)
+ggplot() +
+  geom_line(aes(x = seq_along(res$L), y = res$L)) +
+  geom_point(aes(x = elbows, y = res$L[elbows]), shape = 1, size = 5,
+             col = iprior::gg_col_hue(1)) +
+  labs(x = "Iteration", y = "Lower bound") +
   theme_bw()
 
-## ---- plot.function1 ----
-fnH4 <- function(x, y = NULL, l = 1) {
-x <- scale(x, scale = FALSE)
-if (is.vector(x))
-  x <- matrix(x, ncol = 1)
-n <- nrow(x)
-A <- matrix(0, n, n)
-index.mat <- upper.tri(A)
-index <- which(index.mat, arr.ind = TRUE)
-xcrossprod <- tcrossprod(x)
-if (is.null(y)) {
-  tmp1 <- diag(xcrossprod)[index[, 1]]
-  tmp2 <- diag(xcrossprod)[index[, 2]]
-  tmp3 <- xcrossprod[index]
-  A[index.mat] <- tmp1 + tmp2 - 2 * tmp3
-  A <- A + t(A)
-  tmp <- exp(-A / (2 * l ^ 2))
-} else {
-  if (is.vector(y))
-    y <- matrix(y, ncol = 1)
-  else y <- as.matrix(y)
-  y <- sweep(y, 2, attr(x, "scaled:center"), "-")
-  m <- nrow(y)
-  B <- matrix(0, m, n)
-  indexy <- expand.grid(1:m, 1:n)
-  ynorm <- apply(y, 1, function(z) sum(z ^ 2))
-  xycrossprod <- tcrossprod(y, x)
-  tmp1 <- ynorm[indexy[, 1]]
-  tmp2 <- diag(xcrossprod)[indexy[, 2]]
-  tmp3 <- as.numeric(xycrossprod)
-  B[, ] <- tmp1 + tmp2 - 2 * tmp3
-  tmp <- exp(-B / (2 * l ^ 2))
-}
-tmp
+# Plot of 1-sd contours
+data_fun <- function(mean.vec = apply(X, 2, mean),
+                     prec.mat = diag(1 / apply(X, 2, var))) {
+  set.seed(123)
+  res <- as.data.frame(rmvnorm(1000, mean = mean.vec, sigma = solve(prec.mat)))
+  colnames(res) <- c("x1", "x2")
+  res
 }
 
-dev.SEkern <- function(theta, y = y) {
-  alpha <- mean(y)
-  lambda <- theta[1]
-  psi <- theta[2]
-  n <- length(y)
-  H <- fnH4(x, l = theta[3])
-  H2 <- H %*% H
-  Vy <- psi * lambda ^ 2 * H2 + diag(1 / psi, n)
-  tmp <- -(n / 2) * log(2 * pi) - (1 / 2) * determinant(Vy)$mod -
-    (1 / 2) * (y - alpha) %*% solve(Vy, y - alpha)
-  as.numeric(-2 * tmp)
-}
+plot_faithful_iter <- function(iter = 1) {
+  mu <- res$res.mu[[iter]]
+  Psi <- res$res.Lambda[[iter]]
 
-plot1 <- function(kernel, no.of.draws = 100) {
-  # Fit an I-prior model -------------------------------------------------------
-  if (kernel == "SE") {
-    mod.se <- optim(c(1, 1, 1), dev.SEkern, method = "L-BFGS", y = y,
-                    lower = c(-Inf, 1e-9, 1e-9))
-    n <- length(y)
-    H <- fnH4(x, l = mod.se$par[3])
-    H2 <- H %*% H
-    alpha <- mean(y)
-    lambda <- mod.se$par[1]
-    psi <- mod.se$par[2]
-    Vy <- psi * lambda ^ 2 * H2 + diag(1 / psi, n)
-    w.hat <- psi * lambda * H %*% solve(Vy, y - alpha)
-    VarY.inv <- solve(Vy)
-    H.star <- fnH4(x = x, y = x.true, l = mod.se$par[3])
-    y.fitted <- as.numeric(mean(y) + lambda * H.star %*% w.hat)
-    y.fitted2 <- as.numeric(mean(y) + lambda * H %*% w.hat)
-  } else {
-    if (kernel == "Canonical") {
-      mod <- iprior(kernL(y, x, model = list(kernel = "Canonical")))
-      H.star <- fnH2(x = x, y = x.true)
-    }
-    if (kernel == "FBM") {
-      mod <- fbmOptim(kernL(y, x, model = list(kernel = "FBM")))
-      H.star <- fnH3(x = x, y = x.true, gamma = mod$ipriorKernel$model$Hurst[1])
-    }
-    # Estimated values  ----------------------------------------------------------
-    y.fitted <- predict(mod, list(matrix(x.true, ncol = 1)))
-    y.fitted2 <- fitted(mod)
-    lambda <- mod$lambda
-    psi <- mod$psi
-    w.hat <- mod$w.hat
-    H <- mod$ipriorKernel$Hl[[1]]
-    H2 <- H %*% H
-    Vy <- vary(mod)
-    VarY.inv <- solve(Vy)
+  ggplot(faithful, aes(eruptions, waiting)) +
+    geom_point() +
+    labs(x = "Eruption length (minutes)", y = "Time to next eruption (minutes)") +
+    theme_bw() -> p
+
+  K <- ncol(mu)
+  cols <- iprior::gg_col_hue(K)
+  for (k in 1:K) {
+    dat <- data_fun(mu[, k], (Psi[, , k] + t(Psi[, , k])) / 2)
+    p <- p + stat_ellipse(data = dat, aes(x1, x2), geom = "polygon",
+                          alpha = 0.3, fill = cols[k], level = 0.6827)
   }
 
-  # Prepare random draws from prior and posterior ------------------------------
-  draw.pri <- draw.pos <- matrix(NA, ncol = no.of.draws, nrow = nrow(H.star))
-  L <- chol(VarY.inv)
-  for (i in 1:no.of.draws) {
-    w.draw <- w.hat + crossprod(L, rnorm(length(y)))
-    draw.pos[, i] <- mean(y) + lambda * as.numeric(H.star %*% w.draw)
-    draw.pri[, i] <- mean(y) +
-      lambda * as.numeric(H.star %*% rnorm(length(y), sd = sqrt(psi)))
-  }
-  dat.f <- rbind(data.frame(x = x.true, y = y.fitted, type = "Posterior"),
-                 data.frame(x = x.true, y = mean(y), type = "Prior"))
-  melted.pos <- melt(data.frame(f = draw.pos, x = x.true), id.vars = "x")
-  melted.pri <- melt(data.frame(f = draw.pri, x = x.true), id.vars = "x")
-  melted <- rbind(cbind(melted.pri, type = "Prior"),
-                  cbind(melted.pos, type = "Posterior"))
-
-  # Posterior predictive covariance matrix -------------------------------------
-  varystar <- psi * (lambda ^ 2) * H.star %*% t(H.star) +
-    diag(1 / psi, nrow(H.star))
-  covystary <- psi * (lambda ^ 2) * H.star %*% H
-  VarY.stary <- varystar - covystary %*% VarY.inv %*% t(covystary)
-  dat.fit <- data.frame(x.true, y.fitted, sdev = sqrt(diag(VarY.stary)),
-                        type = "95% credible interval")
-
-  # Prepare random draws for posterior predictive checks -----------------------
-  VarY.hat <- Vy - (psi ^ 2) * (lambda ^ 4) * H2 %*% VarY.inv %*% H2
-  ppc <- matrix(NA, ncol = no.of.draws, nrow = nrow(H))
-  L <- chol(VarY.hat)
-  for (i in 1:no.of.draws) {
-    ppc[, i] <- y.fitted2 + crossprod(L, rnorm(n))
-    # ppc[, i] <- y.fitted2 + rnorm(n, sd = sqrt(diag(VarY.hat)))
-  }
-  melted.ppc <- melt(data.frame(x = x, ppc = ppc), id.vars = "x")
-  melted.ppc <- cbind(melted.ppc, type = "Posterior predictive check")
-
-  # Random draws from prior and posterior function -----------------------------
-  p2.tmp <- ggplot() +
-    geom_point(data = dat, aes(x = x, y = y), col = "grey55", alpha = 0.5) +
-    scale_x_continuous(
-      limits = c(min(x.true), max(x.true)),
-      breaks = NULL, name = expression(italic(x))
-    ) +
-    scale_y_continuous(
-      limits = c(min(y) - 5, max(y) + 5),
-      breaks = NULL, name = expression(italic(y))
-    ) +
-    theme_bw()
-  p2 <- p2.tmp +
-    geom_line(data = melted, aes(x = x, y = value, group = variable),
-              col = "steelblue3", size = 0.19, alpha = 0.5) +
-    facet_grid(type ~ .) +
-    geom_line(data = dat.f, aes(x = x, y = y), size = 1, linetype = 2, col = "grey10")
-  p2.prior <- p2.tmp +
-    geom_line(data = subset(melted, type == "Prior"),
-              aes(x = x, y = value, group = variable),
-              col = "steelblue3", size = 0.19, alpha = 0.5) +
-    facet_grid(type ~ .)
-  p2.prior.line <- p2.prior +
-    geom_line(data = subset(dat.f, type == "Prior"), aes(x = x, y = y),
-              size = 1, linetype = 2, col = "grey10")
-  p2.posterior <- p2.tmp +
-    geom_line(data = subset(melted, type == "Posterior"),
-              aes(x = x, y = value, group = variable),
-              col = "steelblue3", size = 0.19, alpha = 0.5) +
-    facet_grid(type ~ .)
-  p2.posterior.line <- p2.posterior +
-    geom_line(data = subset(dat.f, type == "Posterior"), aes(x = x, y = y),
-              size = 1, linetype = 2, col = "grey10")
-
-  # Confidence band for predicted values  --------------------------------------
-  p3 <- p1 +
-    geom_line(data = dat.fit, aes(x = x.true, y = y.fitted), col = "grey50",
-              size = 0.9, linetype = 2) +
-    geom_ribbon(data = dat.fit, fill = "grey70", alpha = 0.5,
-                aes(x = x.true, ymin = y.fitted - 1.96 * sdev,
-                    ymax = y.fitted + 1.96 * sdev)) +
-    facet_grid(type ~ .)
-
-  p4 <- p2 +
-    geom_line(data = dat.truth, aes(x = x.true, y = y.true, col = "Fitted"),
-              size = 1, alpha = 0.75) + theme(legend.position = "none")
-
-  # Posterior predictive checks ------------------------------------------------
-  p5 <- ggplot() +
-  scale_x_continuous(breaks = NULL, name = expression(italic(y))) +
-  scale_y_continuous(breaks = NULL) +
-  geom_line(data = melted.ppc,
-            aes(x = value, group = variable, col = "yrep", size = "yrep"),
-            stat = "density", alpha = 0.5) +
-  geom_line(data = dat, aes(x = y, col = "y", size = "y"), stat = "density") +
-    theme(legend.position = "bottom") +
-  scale_colour_manual(
-    name = NULL, labels = c("Observed", "Replications"),
-    values = c("grey10", "steelblue3")
-  ) +
-  scale_size_manual(
-    name = NULL, labels = c("Observed", "Replications"),
-    values = c(1.1, 0.19)
-  ) +
-  facet_grid(type ~ .) +
-  theme_bw() +
-  theme(legend.position = c(0.9, 0.5))
-
-  list(p2 = p2, p2.prior = p2.prior, p2.posterior = p2.posterior,
-       p2.prior.line = p2.prior.line,
-       p2.posterior.line = p2.posterior.line, p3 = p3, p4 = p4, p5 = p5)
+  the.text <- paste0("Iteration ", iter - 1)
+  return(p + annotate(geom = "text", label = the.text, x = -Inf, y = Inf, hjust = -0.1,
+               vjust = 1.5))
 }
 
-## ---- canonical.kernel ----
-plot.can <- plot1("Canonical")
+ggsave("../figure/faithful_iter_1.pdf", plot_faithful_iter(1),
+       width = 7, height = 7 * 4.5 / 7)
+ggsave("../figure/faithful_iter_2.pdf", plot_faithful_iter(20),
+       width = 7, height = 7 * 4.5 / 7)
+ggsave("../figure/faithful_iter_3.pdf", plot_faithful_iter(30),
+       width = 7, height = 7 * 4.5 / 7)
+ggsave("../figure/faithful_iter_4.pdf", plot_faithful_iter(158),
+       width = 7, height = 7 * 4.5 / 7)
 
-## ---- fbm.kernel ----
-plot.fbm <- plot1("FBM")
-
-## ---- se.kernel.mle ----
-plot.se <- plot1("SE")
-
-## ---- save.plots.for.presentation ----
-ggsave("../figure/points.pdf", p1, width = 6.5, height = 6.5 / 2.25)
-# ggsave("figure/can-prior.pdf", plot.can$p2.prior.line,
-#        width = 6.5, height = 6.5 / 1.5)
-# ggsave("figure/can-posterior.pdf", plot.can$p2.posterior.line,
-#        width = 6.5, height = 6.5 / 1.5)
-ggsave("../figure/fbm-prior.pdf", plot.fbm$p2.prior.line,
-       width = 6.5, height = 6.5 / 1.5)
-ggsave("../figure/fbm-posterior.pdf", plot.fbm$p2.posterior.line,
-       width = 6.5, height = 6.5 / 1.5)
-ggsave("../figure/fbm-posterior-truth.pdf", {
-  plot.fbm$p2.posterior +
-    geom_line(data = dat.truth, aes(x = x.true, y = y.true), size = 1,
-              alpha = 0.75, col = "red3") +
-    annotate("text", label = "Truth", col = "red3", x = max(x.true),
-             y = max(y.true) + 1)
-  }, width = 6.5, height = 6.5 / 1.5)
-p1 <- p1 +
-  geom_line(data = dat.truth, aes(x = x.true, y = y.true), size = 1,
-            alpha = 0.75, col = "red3") +
-  scale_x_continuous(
-    breaks = NULL, name = NULL
-  ) +
-  scale_y_continuous(
-    breaks = NULL, name = NULL
-  ) + theme_classic()
-ggsave("../figure/plot-line.pdf", p1, width = 4, height = 4 / 2.25)
-ggsave("../figure/credible-interval.pdf", plot.fbm$p3, width = 6.5, height = 6.5 / 1.5)
-ggsave("../figure/ppc.pdf", plot.fbm$p5, width = 6.5, height = 6.5 / 1.5)
+# Save GIF
+makeplot <- function() {
+  for (i in c(1:31, seq(41, 158, by = 10), rep(158, 10))) {
+    p <- plot_faithful_iter(i) + coord_cartesian(xlim = c(1.5, 5.2), ylim = c(43, 97))
+    print(p)
+  }
+  animation::ani.pause()
+}
+animation::saveGIF(makeplot(), interval = 0.25, ani.width = 550, ani.height = 550 / 1.5)

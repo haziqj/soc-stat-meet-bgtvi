@@ -1,7 +1,12 @@
 \subsection{Gaussian mixture model}
 
-\begin{frame}{Gaussian mixture model}
-  Scatter plot
+\begin{frame}{Gaussian mixture model (Old Faithful data set)}
+  \vspace{-15pt}
+  \begin{figure}
+    \centering
+    \includegraphics[scale=0.65]{figure/faithful_scatter}
+  \end{figure}
+  \vspace{-13pt}
   \begin{itemize}
     \item Let $\bx_i \in \bbR^d$ and assume $\bx_i \iid \sum_{k=1}^K \pi_{k} \N_d(\bmu_k,\bPsi_k^{-1})$ for $i=1,\dots,n$.
   \end{itemize}
@@ -96,7 +101,14 @@
 \end{frame}
 
 \begin{frame}{Variational inference for GMM (cont.)}
-  Scatter plots and iteration plots
+  \vspace{-6pt}
+  \begin{figure}
+    \centering\hspace{-10pt}
+    \only<1|handout:1>{\includegraphics[scale=0.67]{figure/faithful_iter_1}}
+    \only<2|handout:2>{\includegraphics[scale=0.67]{figure/faithful_iter_2}}
+    \only<3|handout:0>{\includegraphics[scale=0.67]{figure/faithful_iter_3}}
+    \only<4|handout:3>{\includegraphics[scale=0.67]{figure/faithful_iter_4}}
+  \end{figure}
 \end{frame}
 
 \begin{frame}{Final thoughts on variational GMM}

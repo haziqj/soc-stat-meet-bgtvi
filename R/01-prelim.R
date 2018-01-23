@@ -1,8 +1,9 @@
 ## ---- prelim ----
+library(iprobit)
 library(tidyverse)
 library(directlabels)
 # library(gganimate)
-# library(animation)
+library(animation)
 # library(reshape2)
 # library(directlabels)
 # library(rstan)
