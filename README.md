@@ -1,4 +1,9 @@
 
+---
+layout: default
+title: my title
+---
+
 Abstract
 ========
 
