@@ -1,6 +1,4 @@
 
-![](figure/Transparent.gif)
-
 Abstract
 --------
 
