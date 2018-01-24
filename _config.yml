@@ -1,5 +1,6 @@
 theme: jekyll-theme-minimal
 title: A Beginner's Guide to Variational Inference
+show_downloads: true
 description: |
   Social Statistics Group Meetings. 
   London School of Economics and Political Science, 1 February 2018.
