@@ -55,7 +55,7 @@
 
 \subsection{Idea}
 
-\begin{frame}{Idea}
+\begin{frame}[label=idea]{Idea}
   \blfootnote{\fullcite{bleiyoutube}}
   \vspace*{-35pt}
   \begin{center}\begin{tikzpicture}
@@ -78,13 +78,17 @@
   \end{tikzpicture}\end{center}
   \vspace{-20pt}
   \begin{itemize}
-    \item Minimise Kullback-Leibler divergence (using calculus of variations)
+    \item Minimise Kullback-Leibler divergence (\hyperlink{variationalprinc}{using calculus of variations})
     \[
       \KL(q \Vert p) = -\int \log \frac{p(\bz|\by)}{q(\bz)} q(\bz) \d\bz.
     \]
 %    \item Minimisation of $\KL(q\Vert p)$ is a problem of calculus of variations.
     \item<5-> \textbf{ISSUE}: $\KL(q\Vert p)$ is intractable.
   \end{itemize}
+  
+%  \begin{textblock*}{3cm}(.982\textwidth,0.718\textheight)%
+%    \hyperlink{variationalprinc}{\beamerbutton{aside}}      
+%  \end{textblock*}
 \end{frame}
 
 \begin{frame}{The Evidence Lower Bound (ELBO)}  

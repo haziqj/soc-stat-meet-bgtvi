@@ -83,7 +83,7 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Quality of approximation}
+\begin{frame}[label=quality]{Quality of approximation}
 %  \blfootnote{\fullcite{gunawardana2005convergence}}
   \begin{itemize}[<+->]
     \item Variational inference converges to a different optimum than ML, except for certain models (\cite{gunawardana2005convergence}).
@@ -104,11 +104,15 @@
   	\draw[thick] (5.7,0) -- (5.7, -0.7);
   	\node[align=left,text width=2cm,below] at (6,-0.7) {MCMC};  	
   	\draw[thick] (1.3,0) -- (1.3, -1.8);
-  	\node[align=center,below] at (1.3,-1.8) {Laplace};  	  
+  	\node[align=center,below] at (1.3,-1.8) {\hyperlink{laplace}{Laplace}};  	  
   	\draw[thick] (2.5,0) -- (2.5, -1);	
   	\node[align=center,below] at (3.2,-1) {Expectation propagation};
   \end{tikzpicture}
   }
+  
+%  \begin{textblock*}{3cm}(.982\textwidth,1.04\textheight)%
+%    \hyperlink{laplace}{\beamerbutton{back}}      
+%  \end{textblock*}
 \end{frame}
 
 \subsection{Advanced topics}
