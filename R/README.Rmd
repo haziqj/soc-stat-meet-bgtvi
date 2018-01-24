@@ -13,7 +13,7 @@ options(prompt = "R> ")
 # knitr::read_chunk("08-smoking.R")
 ```
 
-## Abstract
+# Abstract
 
 <!-- This talk aims to introduce the concept of variational techniques for estimating statistical models with latent variables.  -->
 Estimation of complex models that consists of various latent variables and parameters, in addition to the data that is observed, might involve overcoming an intractable integral.
