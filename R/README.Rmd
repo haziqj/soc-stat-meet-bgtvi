@@ -13,6 +13,8 @@ options(prompt = "R> ")
 # knitr::read_chunk("08-smoking.R")
 ```
 
+![](figure/Transparent.gif)
+
 ## Abstract
 
 <!-- This talk aims to introduce the concept of variational techniques for estimating statistical models with latent variables.  -->
@@ -33,11 +35,11 @@ The hope is that the audience will gain a basic understanding of the method to p
 
 ## Supplementary material
 
-#### Variational inference for Gaussian mean and precision
+### Variational inference for Gaussian mean and precision
 
 ![variational-example1](figure/var-eg1.gif)
 
-#### Variational inference for mixture of Gaussians
+### Variational inference for mixture of Gaussians
 
 ![variational-example2](figure/var-eg2.gif)
 

@@ -1,4 +1,6 @@
 
+![](figure/Transparent.gif)
+
 Abstract
 --------
 
@@ -16,11 +18,11 @@ Links
 Supplementary material
 ----------------------
 
-#### Variational inference for Gaussian mean and precision
+### Variational inference for Gaussian mean and precision
 
 ![variational-example1](figure/var-eg1.gif)
 
-#### Variational inference for mixture of Gaussians
+### Variational inference for mixture of Gaussians
 
 ![variational-example2](figure/var-eg2.gif)
 
