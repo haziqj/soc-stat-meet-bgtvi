@@ -13,9 +13,6 @@ options(prompt = "R> ")
 # knitr::read_chunk("08-smoking.R")
 ```
 
-<!-- ```{r prelim, include = FALSE} -->
-<!-- ``` -->
-
 ## Abstract
 
 This talk aims to introduce the concept of variational techniques for estimating statistical models with latent variables. 
