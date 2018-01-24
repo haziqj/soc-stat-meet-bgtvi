@@ -7,9 +7,6 @@ Estimation of complex models that consists of various latent variables and param
 
 Keywords: `variational`, `Bayes`, `inference`, `expectation`, `maximisation`, `EM`, `propagation`, `EP`, `algorithm`, `coordinate`, `ascent`, `Gaussian`, `mixture`, `approximation`, `intractable`, `Kullback-Leibler`, `Markov`, `chain`, `Monte`, `Carlo`, `MCMC`
 
-<!-- ## Links -->
-<!-- - Presentation slides - [PDF](http://socialstats.haziqj.ml/soc-stat-meet-bgtvi-handout.pdf) -->
-<!-- - Source code - [GitHub](https://github.com/haziqj/soc-stat-meet-bgtvi) -->
 Supplementary material
 ----------------------
 
