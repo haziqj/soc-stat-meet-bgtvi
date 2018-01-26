@@ -24,17 +24,30 @@ The approximating density function is chosen so as to minimise the (reverse) Kul
 The main topics that will be discussed are the mean-field variational approximation, the coordinate ascent algorithm, and its properties, with examples following.
 The hope is that the audience will gain a basic understanding of the method to possibly spur on further research and applications in their respective work.
 
-Keywords: `variational`, `Bayes`, `inference`, `expectation`, `maximisation`, `EM`, `propagation`, `EP`, `algorithm`, `coordinate`, `ascent`, `Gaussian`, `mixture`, `approximation`, `intractable`, `Kullback-Leibler`, `Markov`, `chain`, `Monte`, `Carlo`, `MCMC`
+*Keywords*: `variational`, `Bayes`, `inference`, `expectation`, `maximisation`, `EM`, `propagation`, `EP`, `algorithm`, `coordinate`, `ascent`, `Gaussian`, `mixture`, `approximation`, `intractable`, `Kullback-Leibler`, `Markov`, `chain`, `Monte`, `Carlo`, `MCMC`
 
 ## Supplementary material
 
 ### Variational inference for Gaussian mean and precision
 
+![](figure/readme_1.png)
+
 ![variational-example1](figure/var-eg1.gif)
 
 ### Variational inference for mixture of Gaussians
 
+![](figure/readme_2.png)
+
+![](figure/readme_3.png)
+![](figure/readme_4.png)
+
 ![variational-example2](figure/var-eg2.gif)
+
+### Comparison to Laplace's method
+
+![](figure/readme_5.png)
+![](figure/readme_6.png)
+![](figure/readme_7.png)
 
 ## References
 
