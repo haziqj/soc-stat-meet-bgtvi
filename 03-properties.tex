@@ -40,7 +40,7 @@
       \KL(q \Vert p) = \int \log \frac{q(\bz)}{p(\bz|\by)} q(\bz) \d\bz
     \]
     \item $\KL(q \Vert p)$ is large when $p(\bz|\by)$ is close to zero, unless $q(\bz)$ is also close to zero (\emph{zero-forcing}).
-    \item \textbf{ISSUE}: What about other measures of closeness? For instance,
+    \item What about other measures of closeness? \pause For instance,
     \[
       \KL(p \Vert q) = \int \log \frac{p(\bz|\by)}{q(\bz|\by)} p(\bz|\by) \d\bz.
     \]
@@ -76,7 +76,7 @@
     \item Consider $\bz = (z_{1}, z_{2})^\top \sim \N_2( \bmu, \bPsi^{-1})$, $\Cov(z_1,z_2) \neq 0$.
     \item Approximating $p(\bz)$ by $q(\bz) = q(z_1)q(z_2)$ yields
     \[
-      \tilde q(z_1) = \N(z_1|\mu_1,\bPsi_{11}^{-1}) \ \text{ and } \ \tilde q(z_2) = \N(z_2|\mu_2,\bPsi_{22}^{-1})
+      \tilde q(z_1) = \N(z_1|\mu_1,\psi_{11}^{-1}) \ \text{ and } \ \tilde q(z_2) = \N(z_2|\mu_2,\psi_{22}^{-1})
     \]
     and by definition, $\Cov(z_1,z_2) = 0$ under $\tilde q$.
     \item This leads to underestimation of variances (widely reported in the literature---\cite{zhao2013}).
